@@ -46,6 +46,7 @@ const setupWalletController = async (req, res) => {
 
 
 const transactionWalletController = async (req, res) => {
+    const release = await mutex.acquire()
     try {
         const wallet_id = req?.params?.walletId
         if (!wallet_id) {
@@ -98,6 +99,8 @@ const transactionWalletController = async (req, res) => {
         return res.status(200).json(response);
     } catch (error) {
         return res.status(400).send(error?.message);
+    } finally {
+        release();
     }
 }
 

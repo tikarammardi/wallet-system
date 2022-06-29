@@ -18,9 +18,10 @@ class WalletService {
         }
     }
 
-    async createWallet(params) {
+    async createWallet(params, session = null) {
         try {
-            return await Wallet.create(params);
+            const walletInfo = await Wallet.create([params], { session });
+            return walletInfo[0];
         } catch (error) {
 
             throw error;
@@ -28,16 +29,17 @@ class WalletService {
     }
 
 
-    async transaction(params) {
+    async transaction(params, session = null) {
         try {
 
-            return await TransactionWallet.create({
+            const transactionWalletInfo = await TransactionWallet.create([{
                 wallet_id: params?.wallet_id,
                 amount: params?.amount,
                 balance: params?.balance,
                 description: params?.description,
                 type: params?.type
-            });
+            }], { session });
+            return transactionWalletInfo[0]
         } catch (error) {
             throw error;
         }
@@ -80,8 +82,8 @@ class WalletService {
             return error;
         }
     }
-    async credit(params) {
-        return await this.transaction(params);
+    async credit(params, session = null) {
+        return await this.transaction(params, session);
     }
 
     async debit(params) {

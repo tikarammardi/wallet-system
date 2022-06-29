@@ -1,23 +1,21 @@
-const Wallet = require('../models/Wallet')
-const TransactionWallet = require('../models/TransactionWallet')
-const { connectDB } = require('../lib/connection')
 const { WalletService } = require('../service/wallet.service')
 const { TRANSACTION_TYPE } = require('../lib/constants')
 const { WalletSetupSchema, WalletTransactSchema, WalletGetTransactionSchema } = require('../lib/validation.schema')
 const { Mutex } = require('async-mutex')
+const mongoose = require('mongoose')
 
 const mutex = new Mutex();
 
 const setupWalletController = async (req, res) => {
-
-    const session = await Wallet.startSession();
+    const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
         const payload = req?.body;
         await WalletSetupSchema.validateAsync(payload);
+
         const wallet = new WalletService()
-        const walletInfo = await wallet.createWallet(payload)
+        let walletInfo = await wallet.createWallet(payload, session)
         const transactionWalletInfo = await wallet.credit({
             wallet_id: walletInfo?._id,
             amount: payload?.balance, //initially both amount deposit and balance will be same
@@ -38,6 +36,7 @@ const setupWalletController = async (req, res) => {
 
         return res.status(200).json(response);
     } catch (error) {
+        console.log('errror here', error)
         await session.abortTransaction();
         session.endSession();
         return res.status(400).send(error?.message);

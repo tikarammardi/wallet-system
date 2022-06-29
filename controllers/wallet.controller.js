@@ -3,7 +3,7 @@ const TransactionWallet = require('../models/TransactionWallet')
 const { connectDB } = require('../lib/connection')
 const { WalletService } = require('../service/wallet.service')
 const { TRANSACTION_TYPE } = require('../lib/constants')
-const { WalletSetupSchema, WalletTransactSchema } = require('../lib/schema')
+const { WalletSetupSchema, WalletTransactSchema, WalletGetTransactionSchema } = require('../lib/validation.schema')
 const { Mutex } = require('async-mutex')
 
 const mutex = new Mutex();
@@ -22,7 +22,7 @@ const setupWalletController = async (req, res) => {
             wallet_id: walletInfo?._id,
             amount: payload?.balance, //initially both amount deposit and balance will be same
             balance: payload?.balance,
-            description: 'Recharge',
+            description: 'Setup',
             type: TRANSACTION_TYPE?.CREDIT
         }
         )
@@ -30,7 +30,7 @@ const setupWalletController = async (req, res) => {
         session.endSession();
         const response = {
             id: walletInfo?.id,
-            balance: walletInfo?.balance,
+            balance: transactionWalletInfo?.balance,
             name: walletInfo?.name,
             transactionId: transactionWalletInfo?._id,
             date: walletInfo?.created_at
@@ -78,18 +78,18 @@ const transactionWalletController = async (req, res) => {
             }
         }
 
-        console.log('balance is updated', balance)
+
         const transactionWalletInfo = await wallet.depositTransactionAmount(
             {
                 wallet_id: wallet_id,
                 amount: payload?.amount,
-                balance: balance, //calculated available balance
+                balance: balance,
                 description: payload?.description,
                 type: payload?.type
             }
         )
 
-        console.log('transactionWalletInfo', transactionWalletInfo)
+
         const response = {
             balance: transactionWalletInfo?.balance,
             tranactionId: transactionWalletInfo?._id,
@@ -118,12 +118,12 @@ const getWalletInfo = async (req, res) => {
             });
         }
 
-        const getTransactionInfo = await wallet.getWalletBalance({ wallet_id });
+        const walletBalanceInfo = await wallet.getWalletBalance({ wallet_id });
         const response = {
             id: walletInfo?._id,
-            balance: getTransactionInfo?.balance,
+            balance: walletBalanceInfo?.balance,
             name: walletInfo?.name,
-            date: walletInfo?.created_at
+            date: walletBalanceInfo?.created_at
         }
         return res.status(200).json(response);
     } catch (error) {
@@ -135,7 +135,33 @@ const getTransactionInfo = async (req, res) => {
     try {
         const payload = req?.query
 
+        await WalletGetTransactionSchema.validateAsync(payload)
+        const wallet = new WalletService();
+        const walletInfo = await wallet.getWalletInfoById({ wallet_id: payload?.walletId })
+        if (!walletInfo) {
+            return res.status(404).json({
+                message: 'No wallet found'
+            });
+        }
 
+        const transactionInfo = await wallet.getTransactionWallet({
+            wallet_id: payload?.walletId,
+            skip: payload?.skip,
+            limit: payload?.limit
+        });
+
+
+        const response = transactionInfo.map((transaction) => {
+            return {
+                id: transaction?._id,
+                walletId: transaction?.wallet_id,
+                amount: transaction?.amount,
+                balance: transaction?.balance,
+                description: transaction?.description,
+                date: transaction?.created_at,
+                type: transaction?.type
+            }
+        })
 
         return res.status(200).json(response);
     } catch (error) {

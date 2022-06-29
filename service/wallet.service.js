@@ -3,12 +3,14 @@ const Wallet = require('../models/Wallet')
 const TransactionWallet = require('../models/TransactionWallet')
 class WalletService {
 
-
-
-
     async getWalletInfoById(params) {
         try {
-            return await Wallet.findById({ _id: params?.wallet_id })
+            const attributes = {
+                _id: 1,
+                name: 1,
+                created_at: 1,
+            }
+            return await Wallet.findById({ _id: params?.wallet_id }).select(attributes)
 
         } catch (error) {
 
@@ -43,63 +45,41 @@ class WalletService {
 
     async getWalletBalance(params) {
         try {
-            return TransactionWallet.findOne({ wallet_id: params?.wallet_id }).sort({ _id: -1 })
+            const attributes = {
+                _id: 1,
+                balance: 1,
+                amount: 1,
+                created_at: 1
+            }
+            return TransactionWallet.findOne({ wallet_id: params?.wallet_id }).select(attributes)
+                .sort({ _id: -1 })
         } catch (error) {
             return error
         }
     }
 
-    async history(page = 1, pageSize = this.paginationLimit) {
+    async getTransactionWallet(params) {
         try {
-
-
-            let start = 0;
-            if (page !== 1) {
-                page--;
-                start = page * pageSize;
+            const attributes = {
+                _id: 1,
+                wallet_id: 1,
+                description: 1,
+                balance: 1,
+                amount: 1,
+                type: 1,
+                created_at: 1
             }
-            let end = start + pageSize + 1;
+            const transactionInfo = TransactionWallet.find({
+                wallet_id: params?.wallet_id
+            }).select(
+                attributes)
+                .sort({ created_at: -1 }).limit(params?.limit).skip(params?.skip)
 
-            //getting transactions list
-            let TransactionWalletInfo = await TransactionWallet.findAll({
-                attributes: ['transaction_type_id', 'created_at', 'amount', 'order_id'],
-                where: { wallet_id: this.wallet_id },
-                order: [['id', 'DESC']],
-                offset: start,
-                limit: end
-            });
-            let transactions = [];
-            let records = 0;
-            let has_more = 0;
-            TransactionWalletInfo.map((transaction) => {
-                if (records === pageSize) {
-                    has_more = true;
-                    return;
-                }
-                transactions.push({
-                    type: transaction.type,
-                    date: transaction.created_at
-                        ? transaction.created_at
-                        : null,
-                    amount: transaction.amount,
-                    order_id: transaction.order_id
-                });
-                records++;
-            });
-
-            //getting ballance
-            let balance = await this.ballance();
-            return {
-                transactions,
-                balance,
-                has_more
-            };
+            return transactionInfo;
         } catch (error) {
-            let errorMessage = `Wallet Txn failed(b), ${error.message} ${this.wallet_id}`;
-            throw new Error(errorMessage);
+            return error;
         }
     }
-
     async credit(params) {
         return await this.transaction(params);
     }

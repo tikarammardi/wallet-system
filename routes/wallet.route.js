@@ -6,5 +6,5 @@ const { setupWalletController, transactionWalletController, getWalletInfo, getTr
 router.post('/setup', setupWalletController);
 router.post('/transact/:walletId', transactionWalletController);
 router.get('/wallet/:id', getWalletInfo)
-router.get('/transaction', getTransactionInfo)
+router.get('/transactions', getTransactionInfo)
 module.exports = router;

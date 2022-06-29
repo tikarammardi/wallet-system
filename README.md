@@ -23,9 +23,13 @@ npm install
 ```
 ### Postman Collection for Wallet api 
 ` https://www.getpostman.com/collections/9812dce46c6d94fcaf22 `
+
+#### BASE API ENDPOINT 
+`https://wall3t.herokuapp.com`
+
 #### Setup Wallet
-API EndPoint: `https://wall3t.herokuapp.com/setup`
-Request Type: `POST`
+- API EndPoint: `https://wall3t.herokuapp.com/setup`
+- Request Type: `POST`
 ```bash
     curl --location --request POST 'https://wall3t.herokuapp.com/setup' \
     --header 'Content-Type: application/json' \
@@ -47,9 +51,9 @@ Request Type: `POST`
 
 
 #### Credit / Debit transactions
-API EndPoint: `https://wall3t.herokuapp.com/transact/:walletId`
-Request Type: `POST`
-Note: `For type credit -> amount should be +ve`
+- API EndPoint: `https://wall3t.herokuapp.com/transact/:walletId`
+- Request Type: `POST`
+- Note: `For type credit -> amount should be +ve`
       `For type debit -> amount should be -ve`
 
 
@@ -95,8 +99,8 @@ Note: `For type credit -> amount should be +ve`
 
 #### Fetching transactions on wallet
 
-API EndPoint: `https://wall3t.herokuapp.com/transactions/?walletId={walletId}&skip={skip}&limit={limit}`
-Request Type: `GET`
+- API EndPoint: `https://wall3t.herokuapp.com/transactions/?walletId={walletId}&skip={skip}&limit={limit}`
+- Request Type: `GET`
 ```bash
     curl --location --request GET 'https://wall3t.herokuapp.com/transactions/?walletId=62bc2235744655f120a19032&skip=0&limit=20'
 ```
@@ -180,8 +184,8 @@ Request Type: `GET`
 
 #### Get wallet details
 
-API EndPoint: `curl --location --request GET 'https://wall3t.herokuapp.com/wallet/:walletId'`
-Request Type: `GET`
+- API EndPoint: `curl --location --request GET 'https://wall3t.herokuapp.com/wallet/:walletId'`
+- Request Type: `GET`
 ```bash
     curl --location --request POST 'https://wall3t.herokuapp.com/setup' \
     --header 'Content-Type: application/json' \
@@ -201,13 +205,13 @@ Request Type: `GET`
 ```
 
 #### Database Design
-Using Mongoose with MongoDB
+- Using Mongoose with MongoDB
 
 We are having 2 Document Schema one is Wallet and other is TransactionWallet.
 
 I have modeled one-to-many relationship where all the transaction (debit/credit) is being stored in the seprate TransactionWallet document, with Wallet as a parent reference to connect them with Wallet document.
 
-Wallet Schema
+- Wallet Schema
 
 ```bash
     name: 
@@ -216,7 +220,7 @@ Wallet Schema
         type: Date   
 ```
 
-TransactionWallet Schema
+- TransactionWallet Schema
 ```bash
     wallet_id: 
         type: String,

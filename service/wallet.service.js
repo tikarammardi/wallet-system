@@ -73,7 +73,7 @@ class WalletService {
                 wallet_id: params?.wallet_id
             }).select(
                 attributes)
-                .sort({ created_at: -1 }).limit(params?.limit).skip(params?.skip)
+                .sort({ _id: -1 }).limit(params?.limit).skip(params?.skip)
 
             return transactionInfo;
         } catch (error) {
